@@ -26,7 +26,7 @@ The library allows validating IP address against:
     }
 ```
 
-##Roles with IP list
+## Roles with IP list
 
 First need to fill roles + IP list, do that on app start
 ```cs
