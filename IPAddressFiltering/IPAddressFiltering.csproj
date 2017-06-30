@@ -42,7 +42,9 @@
     <Compile Include="IPAddressFilterAttribute.cs" />
     <Compile Include="IPAddressFilteringAction.cs" />
     <Compile Include="IPAddressRange.cs" />
+    <Compile Include="IPAddressRoleFilterAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RolesContainer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
