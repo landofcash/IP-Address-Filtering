@@ -2,83 +2,133 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Web.Http.Controllers;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Controllers;
 
-namespace IPAddressFiltering
+namespace IPAddressFiltering{
+    public static class RolesContainer{
+        private static readonly Dictionary<string, List<IPAddress>> _rolesWithIPList = new Dictionary<string, List<IPAddress>>();
+        static readonly object _lock = new object();
 
-{
+        /// <summary>
+        /// Updates roles and IPs list 
+        /// </summary>
+        /// <param name="items">dictionary of Row name + list of IPs</param>
+        public static void UpdateRolesList(Dictionary<string, List<string>> items)
+        {
+            lock (_lock)
+            {
+                _rolesWithIPList.Clear();
+                foreach (var item in items)
+                {
+                    _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Select(IPAddress.Parse)));
+                }
+            }
+        }
+
+        public static List<IPAddress> GetRoleIPs(string role)
+        {
+            lock (_lock)
+            {
+                if (_rolesWithIPList.ContainsKey(role))
+                {
+                    return new List<IPAddress>(_rolesWithIPList[role]);
+                }
+            }
+            return new List<IPAddress>();
+        }
+    }
+
+    public class IPAddressRoleFilterAttribute : IPAddressFilterAttribute
+    {
+        private static readonly IPAddress _emptyIP = IPAddress.Parse("255.255.255.255"); //broadcast address is never used so it is safe to use here
+        public List<string> IPRoles { get; set; } = new List<string>();
+
+        /// <summary>
+        /// List of roles to get IPs from for this rule
+        /// </summary>
+        /// <param name="roles"></param>
+        /// <param name="filteringType"></param>
+        public IPAddressRoleFilterAttribute(string roles, IPAddressFilteringAction filteringType)
+        {
+            IPAddressRanges = new IPAddressRange[] { };
+            FilteringType = filteringType;
+            //set roles list
+            IPRoles.AddRange(roles.Split(new [] {',',';'},StringSplitOptions.RemoveEmptyEntries).Select(x=>x.Trim()));
+            
+        }
+        protected override bool IsAuthorized(HttpActionContext context)
+        {
+            //validate IP
+            string ipAddressString = ((HttpContextWrapper)context.Request.Properties["MS_HttpContext"]).Request.UserHostName;
+            return IsIPAddressAllowed(ipAddressString);
+        }
+
+        protected override bool IsIPAddressAllowed(string ipAddressString)
+        {
+            var ipaddressesTemp = new List<IPAddress>();
+            ipaddressesTemp.Add(_emptyIP); //need to add something to the list , something that is never used
+            foreach (string role in IPRoles)
+            {
+                ipaddressesTemp.AddRange(RolesContainer.GetRoleIPs(role));
+            }
+            IPAddresses = ipaddressesTemp;
+            return base.IsIPAddressAllowed(ipAddressString);
+        }
+    }
+
     public class IPAddressFilterAttribute : AuthorizeAttribute
     {
-        #region Fields
-        private IEnumerable<IPAddress> ipAddresses;
-        private IEnumerable<IPAddressRange> ipAddressRanges;
-        private IPAddressFilteringAction filteringType;
-        #endregion
+        public IPAddressFilteringAction FilteringType { get; set; }
 
-        #region Properties
-        public IEnumerable<IPAddress> IPAddresses
+        public IEnumerable<IPAddress> IPAddresses { get; set; }
+
+        public IEnumerable<IPAddressRange> IPAddressRanges { get; set; }
+
+        public IPAddressFilterAttribute()
         {
-            get
-            {
-                return this.ipAddresses;
-            }
         }
 
-        public IEnumerable<IPAddressRange> IPAddressRanges
-        {
-            get
-            {
-                return this.ipAddressRanges;
-            }
-        }
-        #endregion
 
-        #region Constructors
-        public IPAddressFilterAttribute(string ipAddress, IPAddressFilteringAction filteringType)
-           : this(new IPAddress[] { IPAddress.Parse(ipAddress) }, filteringType)
+        public IPAddressFilterAttribute(string ipAddress, IPAddressFilteringAction filteringType) : this(new[] { IPAddress.Parse(ipAddress) }, filteringType)
         {
 
         }
 
-        public IPAddressFilterAttribute(IPAddress ipAddress, IPAddressFilteringAction filteringType)
-            : this(new IPAddress[] { ipAddress }, filteringType)
+        public IPAddressFilterAttribute(IPAddress ipAddress, IPAddressFilteringAction filteringType) : this(new[] { ipAddress }, filteringType)
         {
 
         }
 
-        public IPAddressFilterAttribute(IEnumerable<string> ipAddresses, IPAddressFilteringAction filteringType)
-            : this(ipAddresses.Select(a => IPAddress.Parse(a)), filteringType)
+        public IPAddressFilterAttribute(IEnumerable<string> ipAddresses, IPAddressFilteringAction filteringType) : this(ipAddresses.Select(a => IPAddress.Parse(a)), filteringType)
         {
 
         }
 
         public IPAddressFilterAttribute(IEnumerable<IPAddress> ipAddresses, IPAddressFilteringAction filteringType)
         {
-            this.ipAddresses = ipAddresses;
-            this.filteringType = filteringType;
+            IPAddresses = ipAddresses;
+            FilteringType = filteringType;
         }
 
         public IPAddressFilterAttribute(string ipAddressRangeStart, string ipAddressRangeEnd, IPAddressFilteringAction filteringType)
-            : this(new IPAddressRange[] { new IPAddressRange(ipAddressRangeStart, ipAddressRangeEnd) }, filteringType)
+            : this(new[] { new IPAddressRange(ipAddressRangeStart, ipAddressRangeEnd) }, filteringType)
         {
 
         }
 
         public IPAddressFilterAttribute(IPAddressRange ipAddressRange, IPAddressFilteringAction filteringType)
-            :this(new IPAddressRange[] { ipAddressRange }, filteringType)
+            :this(new[] { ipAddressRange }, filteringType)
         {
 
         }
 
         public IPAddressFilterAttribute(IEnumerable<IPAddressRange> ipAddressRanges, IPAddressFilteringAction filteringType)
         {
-            this.ipAddressRanges = ipAddressRanges;
-            this.filteringType = filteringType;
+            IPAddressRanges = ipAddressRanges;
+            FilteringType = filteringType;
         }
-
-        #endregion
 
         protected override bool IsAuthorized(HttpActionContext context)
         {
@@ -86,37 +136,35 @@ namespace IPAddressFiltering
             return IsIPAddressAllowed(ipAddressString);
         }
 
-        private bool IsIPAddressAllowed(string ipAddressString)
+        protected virtual bool IsIPAddressAllowed(string ipAddressString)
         {
             IPAddress ipAddress = IPAddress.Parse(ipAddressString);
 
-            if (this.filteringType == IPAddressFilteringAction.Allow)
+            if (FilteringType == IPAddressFilteringAction.Allow)
             {
-                if (this.ipAddresses != null && this.ipAddresses.Any() &&
+                if (IPAddresses != null && IPAddresses.Any() &&
                     !IsIPAddressInList(ipAddressString.Trim()))
                 {
                     return false;
                 }
-                else if (this.ipAddressRanges != null && this.ipAddressRanges.Any() &&
-                    !this.ipAddressRanges.Where(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)).Any())
+                if (IPAddressRanges != null && IPAddressRanges.Any() &&
+                    !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
                 {
                     return false;
                 }
-
             }
             else
             {
-                if (this.ipAddresses != null && this.ipAddresses.Any() &&
+                if (IPAddresses != null && IPAddresses.Any() &&
                    IsIPAddressInList(ipAddressString.Trim()))
                 {
                     return false;
                 }
-                else if (this.ipAddressRanges != null && this.ipAddressRanges.Any() &&
-                    this.ipAddressRanges.Where(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)).Any())
+                if (IPAddressRanges != null && IPAddressRanges.Any() &&
+                    IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
                 {
                     return false;
                 }
-
             }
 
             return true;
@@ -127,11 +175,10 @@ namespace IPAddressFiltering
         {
             if (!string.IsNullOrWhiteSpace(ipAddress))
             {
-                IEnumerable<string> addresses = this.ipAddresses.Select(a => a.ToString());
-                return addresses.Where(a => a.Trim().Equals(ipAddress, StringComparison.InvariantCultureIgnoreCase)).Any();
+                IEnumerable<string> addresses = IPAddresses.Select(a => a.ToString());
+                return addresses.Any(a => a.Trim().Equals(ipAddress, StringComparison.InvariantCultureIgnoreCase));
             }
             return false;
         }
-
     }
 }

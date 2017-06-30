@@ -13,5 +13,9 @@ namespace IPAddressFiltering.Testing
         {
             return (bool)typeof(IPAddressFilterAttribute).GetMethod("IsIPAddressAllowed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(attribute, new object[] { ip });
         }
+        public static bool IsIPAddressAllowed(IPAddressRoleFilterAttribute attribute, string ip)
+        {
+            return (bool)typeof(IPAddressRoleFilterAttribute).GetMethod("IsIPAddressAllowed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(attribute, new object[] { ip });
+        }
     }
 }

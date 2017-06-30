@@ -4,14 +4,14 @@ namespace IPAddressFiltering
 {
     public class IPAddressRange
     {
-        private IPAddress startIPAddress;
-        private IPAddress endIPAddress;
+        private readonly IPAddress _startIPAddress;
+        private readonly IPAddress _endIPAddress;
 
         public IPAddress StartIPAddress
         {
             get
             {
-                return this.startIPAddress;
+                return _startIPAddress;
             }
         }
 
@@ -19,7 +19,7 @@ namespace IPAddressFiltering
         {
             get
             {
-                return this.endIPAddress;
+                return _endIPAddress;
             }
         }
 
@@ -30,8 +30,8 @@ namespace IPAddressFiltering
         }
         public IPAddressRange(IPAddress startIPAddress, IPAddress endIPAddress)
         {
-            this.startIPAddress = startIPAddress;
-            this.endIPAddress = endIPAddress;
+            this._startIPAddress = startIPAddress;
+            this._endIPAddress = endIPAddress;
         }
     }
 }
