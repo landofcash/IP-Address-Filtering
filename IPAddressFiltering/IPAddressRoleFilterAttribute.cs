@@ -19,7 +19,7 @@ namespace IPAddressFiltering
         /// </summary>
         /// <param name="roles"></param>
         /// <param name="filteringType"></param>
-        public IPAddressRoleFilterAttribute(string roles, IPAddressFilteringAction filteringType)
+        public IPAddressRoleFilterAttribute(string roles, IPAddressFilteringAction filteringType = IPAddressFilteringAction.Allow)
         {
             IPAddressRanges = new IPAddressRange[] { };
             FilteringType = filteringType;
