@@ -11,7 +11,10 @@ namespace IPAddressFiltering
     /// </summary>
     public class IPAddressRoleFilterAttribute : IPAddressFilterAttribute
     {
+        //prob can use IPAddress constants here
         private static readonly IPAddress _emptyIP = IPAddress.Parse("255.255.255.255"); //broadcast address is never used so it is safe to use here
+        private static readonly IPAddress _anyIP = IPAddress.Parse("0.0.0.0"); //any ip
+
         public List<string> IPRoles { get; set; } = new List<string>();
 
         /// <summary>
@@ -38,10 +41,18 @@ namespace IPAddressFiltering
         protected override bool IsIPAddressAllowed(string ipAddressString)
         {
             var ipaddressesTemp = new List<IPAddress>();
-            ipaddressesTemp.Add(_emptyIP); //need to add something to the list , something that is never used
+            ipaddressesTemp.Add(_emptyIP); //HACK need to add something to the list , something that is never used
             foreach (string role in IPRoles)
             {
+                if (role== RolesContainer.ANY_ROLE)
+                {
+                    return true;
+                }
                 ipaddressesTemp.AddRange(RolesContainer.GetRoleIPs(role));
+            }
+            if (ipaddressesTemp.Contains(_anyIP))
+            {
+                return true;
             }
             IPAddresses = ipaddressesTemp;
             return base.IsIPAddressAllowed(ipAddressString);

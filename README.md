@@ -10,7 +10,7 @@ The library allows validating IP address against:
 * Multiple IP address ranges
 * Roles+IP list stored in updateable static class
 
-## How to use
+## How to use with the IP address hardcoded into attribute
 
 ```cs
 	[IPAddressFilter("::1", IPAddressFilteringAction.Allow)]
@@ -31,18 +31,21 @@ The library allows validating IP address against:
 
 ## Roles with IP list
 
-First need to fill roles + IP list, do that on app start
+First need to fill roles + IP list, do that on app start, use "0.0.0.0" to allow any IP
 ```cs
 	var rolesWithIpList = new Dictionary<string, List<string>>()
 	{
 		{ "admin", new List<string>() {"192.168.10.100"}},
                 { "user", new List<string>() {"192.168.10.200", "192.168.10.201", "192.168.10.202"}},
-                { "local", new List<string>() { "127.0.0.1", "::1"}},
+
 	};
 	RolesContainer.UpdateRolesList(rolesWithIpList);
 ```
 
+
+
 In controller mark methods with IPAddressRoleFilter attribute and specify roles that are allowed.
+Note that there are two predefined roles: "local" ("127.0.0.1", "::1") and "any"
 
 ```cs
 	[IPAddressRoleFilter("admin,local")]

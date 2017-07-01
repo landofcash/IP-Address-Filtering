@@ -7,7 +7,14 @@ namespace IPAddressFiltering
     /// <summary>
     /// Static class to store roles with IPs list for authorization
     /// </summary>
-    public static class RolesContainer{
+    public static class RolesContainer
+    {
+        public static readonly string LOCAL_ROLE = "local";
+        public static readonly string ANY_ROLE = "any";
+
+        private static readonly IPAddress _localIPv4 = IPAddress.Parse("127.0.0.1");
+        private static readonly IPAddress _localIPv6 = IPAddress.Parse("::1");
+
         private static readonly Dictionary<string, List<IPAddress>> _rolesWithIPList = new Dictionary<string, List<IPAddress>>();
         static readonly object _lock = new object();
 
@@ -23,6 +30,11 @@ namespace IPAddressFiltering
                 foreach (var item in items)
                 {
                     _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Select(IPAddress.Parse)));
+                }
+                //adds local role
+                if (!_rolesWithIPList.ContainsKey(LOCAL_ROLE))
+                {
+                    _rolesWithIPList.Add(LOCAL_ROLE, new List<IPAddress>() { _localIPv4 , _localIPv6 });
                 }
             }
         }

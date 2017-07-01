@@ -10,7 +10,7 @@ namespace IPAddressFiltering.Testing
         public void TestRolesIP()
         {
             //no roles
-            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("admin, user", IPAddressFilteringAction.Allow);
+            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("admin, user, local");
             Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.10.100"));
             //add roles
             var rolesWithIpList = new Dictionary<string, List<string>>()
@@ -43,6 +43,40 @@ namespace IPAddressFiltering.Testing
             Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.10.100"));
             Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.10.101"));
             Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.10.102"));
+
+            //local role
+            rolesWithIpList = new Dictionary<string, List<string>>(){};
+            RolesContainer.UpdateRolesList(rolesWithIpList);
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "127.0.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "::1"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
+        }
+
+        [TestMethod]
+        public void TestRolesAnyIP()
+        {
+            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("internet");
+            var rolesWithIpList = new Dictionary<string, List<string>>()
+            {
+                { "internet", new List<string>() { "0.0.0.0" }},
+            };
+            RolesContainer.UpdateRolesList(rolesWithIpList);
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "127.0.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "::1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
+        }
+
+        [TestMethod]
+        public void TestRolesAnyRoleIP()
+        {
+            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("any");
+            var rolesWithIpList = new Dictionary<string, List<string>>(){};
+            RolesContainer.UpdateRolesList(rolesWithIpList);
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "127.0.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "::1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
         }
     }
 }
