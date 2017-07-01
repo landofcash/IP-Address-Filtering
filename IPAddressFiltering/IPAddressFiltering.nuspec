@@ -4,7 +4,7 @@
         <id>IPAddressWithRolesFiltering</id>
         <version>$version$</version>
         <title>IP Address, Roles with IP Filtering</title>
-        <authors>Mikhail  A., Dejan Stojanovic</authors>
+        <authors>Mikhail  A.</authors>
 	<owners>Mikhail A.</owners>
         <licenseUrl>https://github.com/landofcash/IP-Address-Filtering/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/landofcash/IP-Address-Filtering</projectUrl>
@@ -16,6 +16,8 @@ It supports:
 - single IP address range filtering
 - multiple IP address range filtering
 - a list of roles with linked IP addresses
+
+Forked from https://github.com/dejanstojanovic/IP-Address-Filtering
 </description>
         <summary>Lightweight C# ASP.NET MVC and Web API IP address with roles filtering library</summary>
         <copyright>Mikhail  A. 2017</copyright>
