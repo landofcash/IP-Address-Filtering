@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
-using System.Web.Http;
-using System.Web.Http.Controllers;
+using System.Web.Mvc;
 
 namespace IPAddressFiltering{
     public class IPAddressFilterAttribute : AuthorizeAttribute
@@ -59,9 +58,9 @@ namespace IPAddressFiltering{
             FilteringType = filteringType;
         }
 
-        protected override bool IsAuthorized(HttpActionContext context)
+        protected override bool AuthorizeCore(HttpContextBase context)
         {
-            string ipAddressString = ((HttpContextWrapper)context.Request.Properties["MS_HttpContext"]).Request.UserHostName;
+            string ipAddressString = context.Request.UserHostName;
             return IsIPAddressAllowed(ipAddressString);
         }
 
@@ -71,26 +70,22 @@ namespace IPAddressFiltering{
 
             if (FilteringType == IPAddressFilteringAction.Allow)
             {
-                if (IPAddresses != null && IPAddresses.Any() &&
-                    !IsIPAddressInList(ipAddressString.Trim()))
+                if (IPAddresses != null && IPAddresses.Any() && !IsIPAddressInList(ipAddress))
                 {
                     return false;
                 }
-                if (IPAddressRanges != null && IPAddressRanges.Any() &&
-                    !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                if (IPAddressRanges != null && IPAddressRanges.Any() && !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
                 {
                     return false;
                 }
             }
             else
             {
-                if (IPAddresses != null && IPAddresses.Any() &&
-                   IsIPAddressInList(ipAddressString.Trim()))
+                if (IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
                 {
                     return false;
                 }
-                if (IPAddressRanges != null && IPAddressRanges.Any() &&
-                    IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                if (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
                 {
                     return false;
                 }
@@ -100,14 +95,9 @@ namespace IPAddressFiltering{
 
         }
 
-        private bool IsIPAddressInList(string ipAddress)
+        private bool IsIPAddressInList(IPAddress ipAddress)
         {
-            if (!string.IsNullOrWhiteSpace(ipAddress))
-            {
-                IEnumerable<string> addresses = IPAddresses.Select(a => a.ToString());
-                return addresses.Any(a => a.Trim().Equals(ipAddress, StringComparison.InvariantCultureIgnoreCase));
-            }
-            return false;
+            return IPAddresses.Any(x => x.Equals(ipAddress));
         }
     }
 }

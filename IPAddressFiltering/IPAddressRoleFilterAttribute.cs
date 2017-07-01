@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
-using System.Web.Http.Controllers;
 
 namespace IPAddressFiltering
 {
@@ -28,10 +27,11 @@ namespace IPAddressFiltering
             IPRoles.AddRange(roles.Split(new [] {',',';'},StringSplitOptions.RemoveEmptyEntries).Select(x=>x.Trim()));
             
         }
-        protected override bool IsAuthorized(HttpActionContext context)
+
+        protected override bool AuthorizeCore(HttpContextBase context)
         {
             //validate IP
-            string ipAddressString = ((HttpContextWrapper)context.Request.Properties["MS_HttpContext"]).Request.UserHostName;
+            string ipAddressString = context.Request.UserHostName;
             return IsIPAddressAllowed(ipAddressString);
         }
 
