@@ -57,5 +57,6 @@ namespace IPAddressFiltering
             IPAddresses = ipaddressesTemp;
             return base.IsIPAddressAllowed(ipAddressString);
         }
+
     }
 }

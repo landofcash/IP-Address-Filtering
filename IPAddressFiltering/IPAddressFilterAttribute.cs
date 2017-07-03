@@ -90,9 +90,13 @@ namespace IPAddressFiltering{
                     return false;
                 }
             }
-
             return true;
+        }
 
+        protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
+        {
+            var result = new HttpIPAddressRejectedResult($"IP {filterContext.HttpContext.Request.UserHostName} is restricted.");
+            filterContext.Result = result;
         }
 
         private bool IsIPAddressInList(IPAddress ipAddress)

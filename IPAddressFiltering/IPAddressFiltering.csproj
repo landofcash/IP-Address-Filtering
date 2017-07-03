@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HttpIPAddressRejectedResult.cs" />
     <Compile Include="IPAddressExtensions.cs" />
     <Compile Include="IPAddressFilterAttribute.cs" />
     <Compile Include="IPAddressFilteringAction.cs" />
