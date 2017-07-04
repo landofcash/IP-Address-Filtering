@@ -78,5 +78,21 @@ namespace IPAddressFiltering.Testing
             Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
             Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
         }
+
+        [TestMethod]
+        public void TestRolesGlobalRole()
+        {
+            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("nothing");
+            var rolesWithIpList = new Dictionary<string, List<string>>()
+            {
+                { RolesContainer.GLOBAL_ROLE,new List<string>() { "8.8.8.8" } }
+                
+            };
+            RolesContainer.UpdateRolesList(rolesWithIpList);
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "127.0.0.1"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "::1"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace IPAddressFiltering
     {
         public static readonly string LOCAL_ROLE = "local";
         public static readonly string ANY_ROLE = "any";
+        public static readonly string GLOBAL_ROLE = "global";
 
         private static readonly IPAddress _localIPv4 = IPAddress.Parse("127.0.0.1");
         private static readonly IPAddress _localIPv6 = IPAddress.Parse("::1");

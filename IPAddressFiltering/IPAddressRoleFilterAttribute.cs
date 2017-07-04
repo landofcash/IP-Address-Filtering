@@ -42,9 +42,10 @@ namespace IPAddressFiltering
         {
             var ipaddressesTemp = new List<IPAddress>();
             ipaddressesTemp.Add(_emptyIP); //HACK need to add something to the list , something that is never used
-            foreach (string role in IPRoles)
+            ipaddressesTemp.AddRange(RolesContainer.GetRoleIPs(RolesContainer.GLOBAL_ROLE)); // add global role IPs
+            foreach (string role in IPRoles) //add IPs for each role for this attribute
             {
-                if (role== RolesContainer.ANY_ROLE)
+                if (role == RolesContainer.ANY_ROLE)
                 {
                     return true;
                 }
