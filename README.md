@@ -45,7 +45,7 @@ First need to fill roles + IP list, do that on app start, use "0.0.0.0" to allow
 
 
 In controller mark methods with IPAddressRoleFilter attribute and specify roles that are allowed.
-Note that there are two predefined roles: "local" ("127.0.0.1", "::1") and "any"
+Note that there are two predefined roles: "local" ("127.0.0.1", "::1") and "any" ("0.0.0.0")
 
 ```cs
 	[IPAddressRoleFilter("admin,local")]
@@ -55,4 +55,13 @@ Note that there are two predefined roles: "local" ("127.0.0.1", "::1") and "any"
 
             return View();
         }
+```
+
+Also the role named "global" is added by default to all IPAddressRoleFilter attributes
+This role allows to enable/disable IPs for all IPAddressRoleFilter attributes.
+
+```cs
+	[IPAddressRoleFilter("admin,local")]
+	// same as
+	[IPAddressRoleFilter("global,admin,local")]
 ```
