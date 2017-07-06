@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
 
-namespace IPAddressFiltering{
+
+namespace IPAddressFiltering
+{
+    /// <summary>
+    /// MVC
+    /// </summary>
     public class IPAddressFilterAttribute : AuthorizeAttribute
     {
-        public IPAddressFilteringAction FilteringType { get; set; }
+        protected readonly IPAddressFilterCore _core = new IPAddressFilterCore();
 
-        public IEnumerable<IPAddress> IPAddresses { get; set; }
-
-        public IEnumerable<IPAddressRange> IPAddressRanges { get; set; }
-
+        #region CONSTRUCTORS
         public IPAddressFilterAttribute()
         {
         }
@@ -36,8 +37,8 @@ namespace IPAddressFiltering{
 
         public IPAddressFilterAttribute(IEnumerable<IPAddress> ipAddresses, IPAddressFilteringAction filteringType)
         {
-            IPAddresses = ipAddresses;
-            FilteringType = filteringType;
+            _core.IPAddresses = ipAddresses;
+            _core.FilteringType = filteringType;
         }
 
         public IPAddressFilterAttribute(string ipAddressRangeStart, string ipAddressRangeEnd, IPAddressFilteringAction filteringType)
@@ -47,50 +48,22 @@ namespace IPAddressFiltering{
         }
 
         public IPAddressFilterAttribute(IPAddressRange ipAddressRange, IPAddressFilteringAction filteringType)
-            :this(new[] { ipAddressRange }, filteringType)
+            : this(new[] { ipAddressRange }, filteringType)
         {
 
         }
 
         public IPAddressFilterAttribute(IEnumerable<IPAddressRange> ipAddressRanges, IPAddressFilteringAction filteringType)
         {
-            IPAddressRanges = ipAddressRanges;
-            FilteringType = filteringType;
+            _core.IPAddressRanges = ipAddressRanges;
+            _core.FilteringType = filteringType;
         }
+        #endregion
 
         protected override bool AuthorizeCore(HttpContextBase context)
         {
             string ipAddressString = context.Request.UserHostName;
             return IsIPAddressAllowed(ipAddressString);
-        }
-
-        protected virtual bool IsIPAddressAllowed(string ipAddressString)
-        {
-            IPAddress ipAddress = IPAddress.Parse(ipAddressString);
-
-            if (FilteringType == IPAddressFilteringAction.Allow)
-            {
-                if (IPAddresses != null && IPAddresses.Any() && !IsIPAddressInList(ipAddress))
-                {
-                    return false;
-                }
-                if (IPAddressRanges != null && IPAddressRanges.Any() && !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
-                {
-                    return false;
-                }
-                if (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
@@ -99,9 +72,9 @@ namespace IPAddressFiltering{
             filterContext.Result = result;
         }
 
-        private bool IsIPAddressInList(IPAddress ipAddress)
+        protected virtual bool IsIPAddressAllowed(string ipAddressString)
         {
-            return IPAddresses.Any(x => x.Equals(ipAddress));
+            return _core.IsIPAddressAllowed(ipAddressString);
         }
     }
 }

@@ -1,36 +1,33 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Web;
 
 namespace IPAddressFiltering
 {
     /// <summary>
-    /// MVC Roles linked to IPs attribute 
+    /// WEB API Roles linked to IPs attribute 
     /// </summary>
-    public class IPAddressRoleFilterAttribute : IPAddressFilterAttribute
+    public class IPAddressRoleFilterAPIAttribute : IPAddressFilterAPIAttribute
     {
-       
         /// <summary>
         /// List of roles to get IPs from for this rule
         /// </summary>
         /// <param name="roles"></param>
         /// <param name="filteringType"></param>
-        public IPAddressRoleFilterAttribute(string roles, IPAddressFilteringAction filteringType = IPAddressFilteringAction.Allow)
+        public IPAddressRoleFilterAPIAttribute(string roles, IPAddressFilteringAction filteringType = IPAddressFilteringAction.Allow)
         {
             _core.IPAddressRanges = new IPAddressRange[] { };
             _core.FilteringType = filteringType;
             //set roles list
-            _core.IPRoles.AddRange(roles.Split(new [] {',',';'},StringSplitOptions.RemoveEmptyEntries).Select(x=>x.Trim()));
+            _core.IPRoles.AddRange(roles.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
         }
 
-        protected override bool AuthorizeCore(HttpContextBase context)
+        protected override bool IsAuthorized(System.Web.Http.Controllers.HttpActionContext context)
         {
-            string ipAddressString = context.Request.UserHostName;
+            //validate IP
+            string ipAddressString = ((HttpContextWrapper)context.Request.Properties["MS_HttpContext"]).Request.UserHostName;
             return IsIPAddressAllowed(ipAddressString);
         }
-
         protected override bool IsIPAddressAllowed(string ipAddressString)
         {
             bool isValid = _core.UpdateIPAddressesFromRoles(); //update IP from roles
