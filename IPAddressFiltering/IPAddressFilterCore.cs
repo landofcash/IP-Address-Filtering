@@ -21,22 +21,18 @@ namespace IPAddressFiltering
 
             if (FilteringType == IPAddressFilteringAction.Allow)
             {
-                if (IPAddresses != null && IPAddresses.Any() && !IsIPAddressInList(ipAddress))
-                {
-                    return false;
-                }
-                if (IPAddressRanges != null && IPAddressRanges.Any() && !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                //reject the IP if it is in either list
+                if ((IPAddresses != null && IPAddresses.Any() && !IsIPAddressInList(ipAddress))
+                && (IPAddressRanges != null && IPAddressRanges.Any() && !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress))))
                 {
                     return false;
                 }
             }
             else
             {
-                if (IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
-                {
-                    return false;
-                }
-                if (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                //reject the IP if it is in either list
+                if ((IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
+                || (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress))))
                 {
                     return false;
                 }
@@ -50,7 +46,9 @@ namespace IPAddressFiltering
         /// <returns></returns>
         public bool UpdateIPAddressesFromRoles()
         {
+            //single IP addresses
             var ipaddressesTemp = new List<IPAddress>();
+            var ipaddressesRangeTemp = new List<IPAddressRange>();
             ipaddressesTemp.Add(_emptyIP); //HACK need to add something to the list , something that is never used
             ipaddressesTemp.AddRange(RolesContainer.GetRoleIPs(RolesContainer.GLOBAL_ROLE)); // add global role IPs
             foreach (string role in IPRoles) //add IPs for each role for this attribute
@@ -60,13 +58,17 @@ namespace IPAddressFiltering
                     return true;
                 }
                 ipaddressesTemp.AddRange(RolesContainer.GetRoleIPs(role));
+                ipaddressesRangeTemp.AddRange(RolesContainer.GetRoleIPRanges(role));
             }
             if (ipaddressesTemp.Contains(_anyIP))
             {
                 return true;
             }
             IPAddresses = ipaddressesTemp;
+            IPAddressRanges = ipaddressesRangeTemp;
+
             return false;
+            //IP address ranges
         }
 
         private bool IsIPAddressInList(IPAddress ipAddress)

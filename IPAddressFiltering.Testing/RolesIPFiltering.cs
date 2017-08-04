@@ -94,5 +94,29 @@ namespace IPAddressFiltering.Testing
             Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
             Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
         }
+
+        [TestMethod]
+        public void TestRolesRangeCIDR()
+        {
+            IPAddressRoleFilterAttribute attribute = new IPAddressRoleFilterAttribute("simpleRange, netmask, prefix");
+            var rolesWithIpList = new Dictionary<string, List<string>>()
+            {
+                { "simpleRange",new List<string>() { "8.8.8.7-8.8.8.9" } },
+                { "netmask",new List<string>() { "192.168.80.1/255.255.255.0" } },
+                { "prefix",new List<string>() { "192.168.9.1/24" } }
+
+            };
+            RolesContainer.UpdateRolesList(rolesWithIpList);
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "127.0.0.1"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "::1"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.0.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "8.8.8.8"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.80.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.80.254"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.8.254"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.9.1"));
+            Assert.AreEqual<bool>(true, Common.IsIPAddressAllowed(attribute, "192.168.9.254"));
+            Assert.AreEqual<bool>(false, Common.IsIPAddressAllowed(attribute, "192.168.10.1"));
+        }
     }
 }

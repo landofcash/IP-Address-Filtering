@@ -17,6 +17,7 @@ namespace IPAddressFiltering
         private static readonly IPAddress _localIPv6 = IPAddress.Parse("::1");
 
         private static readonly Dictionary<string, List<IPAddress>> _rolesWithIPList = new Dictionary<string, List<IPAddress>>();
+        private static readonly Dictionary<string, List<IPAddressRange>> _rolesWithIPRangeList = new Dictionary<string, List<IPAddressRange>>();
         static readonly object _lock = new object();
 
         /// <summary>
@@ -28,14 +29,22 @@ namespace IPAddressFiltering
             lock (_lock)
             {
                 _rolesWithIPList.Clear();
+                _rolesWithIPRangeList.Clear();
                 foreach (var item in items)
                 {
-                    _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Select(IPAddress.Parse)));
+                    if (item.Value.Any(v => v.IndexOfAny(new char[] { '-', '/' }) >= 0))
+                    {
+                        _rolesWithIPRangeList.Add(item.Key, new List<IPAddressRange>(item.Value.Where(v => v.IndexOfAny(new char[] { '-', '/' }) >= 0).Select(IPAddressRange.Parse)));
+                    }
+                    else
+                    {
+                        _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Where(v => v.IndexOfAny(new char[] { '-', '/' }) < 0).Select(IPAddress.Parse)));
+                    }
                 }
                 //adds local role
                 if (!_rolesWithIPList.ContainsKey(LOCAL_ROLE))
                 {
-                    _rolesWithIPList.Add(LOCAL_ROLE, new List<IPAddress>() { _localIPv4 , _localIPv6 });
+                    _rolesWithIPList.Add(LOCAL_ROLE, new List<IPAddress>() { _localIPv4, _localIPv6 });
                 }
             }
         }
@@ -54,6 +63,18 @@ namespace IPAddressFiltering
                 }
             }
             return new List<IPAddress>();
+        }
+
+        public static List<IPAddressRange> GetRoleIPRanges(string role)
+        {
+            lock (_lock)
+            {
+                if (_rolesWithIPRangeList.ContainsKey(role))
+                {
+                    return new List<IPAddressRange>(_rolesWithIPRangeList[role]);
+                }
+            }
+            return new List<IPAddressRange>();
         }
     }
 }
