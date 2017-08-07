@@ -177,16 +177,16 @@ namespace IPAddressFiltering
                 int val = b[octet] + value;
                 b[octet] = (byte)val;
                 return new IPAddress(b);
-            } else if (address.AddressFamily == AddressFamily.InterNetworkV6 && octet >= 0 && octet < 8)
-            {
-                byte[] b = address.GetAddressBytes();
-                int val = b[octet] + value;
-                b[octet] = (byte)val;
-                return new IPAddress(b);
+            //} else if (address.AddressFamily == AddressFamily.InterNetworkV6 && octet >= 0 && octet < 8)
+            //{
+            //    byte[] b = address.GetAddressBytes();
+            //    int val = b[octet] + value;
+            //    b[octet] = (byte)val;
+            //    return new IPAddress(b);
             }
             else
             {
-                throw new NotImplementedException("Add is only implimented for IP4 and IP6");
+                throw new NotImplementedException("Add is only implimented for IP4");
             }
             return address;
         }
