@@ -37,10 +37,10 @@ First need to fill roles + IP list, do that on app start, use "0.0.0.0" to allow
 	var rolesWithIpList = new Dictionary<string, List<string>>()
 	{
 		{ "admin", new List<string>() {"192.168.10.100"}},
-        { "user", new List<string>() {"192.168.10.200", "192.168.10.201", "192.168.10.202"}},
-        { "simpleRange",new List<string>() { "8.8.8.7-8.8.8.9" } },
-        { "netmask",new List<string>() { "192.168.80.1/255.255.255.0" } },
-        { "prefix",new List<string>() { "192.168.9.1/24" } },
+                { "user", new List<string>() {"192.168.10.200", "192.168.10.201", "192.168.10.202"}},
+                { "simpleRange",new List<string>() { "8.8.8.7-8.8.8.9" } },
+                { "netmask",new List<string>() { "192.168.80.1/255.255.255.0" } },
+                { "prefix",new List<string>() { "192.168.9.1/24" } },
 	};
 	RolesContainer.UpdateRolesList(rolesWithIpList);
 ```
