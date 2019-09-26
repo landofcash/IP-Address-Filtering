@@ -186,7 +186,7 @@ namespace IPAddressFiltering
             }
             else
             {
-                throw new NotImplementedException("Add is only implimented for IP4");
+                throw new NotImplementedException("Add is only implemented for IP4");
             }
             return address;
         }

@@ -20,7 +20,7 @@ namespace IPAddressFiltering
         {
             if (context == null)
             {
-                throw new ArgumentNullException("context");
+                throw new ArgumentNullException(nameof(context));
             }
 
             context.HttpContext.Response.StatusCode = StatusCode;

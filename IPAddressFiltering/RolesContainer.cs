@@ -32,13 +32,13 @@ namespace IPAddressFiltering
                 _rolesWithIPRangeList.Clear();
                 foreach (var item in items)
                 {
-                    if (item.Value.Any(v => v.IndexOfAny(new char[] { '-', '/' }) >= 0))
+                    if (item.Value.Any(v => v.IndexOfAny(new [] { '-', '/' }) >= 0))
                     {
-                        _rolesWithIPRangeList.Add(item.Key, new List<IPAddressRange>(item.Value.Where(v => v.IndexOfAny(new char[] { '-', '/' }) >= 0).Select(IPAddressRange.Parse)));
+                        _rolesWithIPRangeList.Add(item.Key, new List<IPAddressRange>(item.Value.Where(v => v.IndexOfAny(new [] { '-', '/' }) >= 0).Select(IPAddressRange.Parse)));
                     }
                     else
                     {
-                        _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Where(v => v.IndexOfAny(new char[] { '-', '/' }) < 0).Select(IPAddress.Parse)));
+                        _rolesWithIPList.Add(item.Key, new List<IPAddress>(item.Value.Where(v => v.IndexOfAny(new [] { '-', '/' }) < 0).Select(IPAddress.Parse)));
                     }
                 }
                 //adds local role

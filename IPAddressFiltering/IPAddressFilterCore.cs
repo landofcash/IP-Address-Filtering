@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System;
 
 namespace IPAddressFiltering
 {
@@ -18,26 +19,31 @@ namespace IPAddressFiltering
         public virtual bool IsIPAddressAllowed(string ipAddressString)
         {
             IPAddress ipAddress = IPAddress.Parse(ipAddressString);
-
             if (FilteringType == IPAddressFilteringAction.Allow)
             {
-                //reject the IP if it is in either list
-                if ((IPAddresses != null && IPAddresses.Any() && !IsIPAddressInList(ipAddress))
-                && (IPAddressRanges != null && IPAddressRanges.Any() && !IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress))))
+                if (IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
                 {
-                    return false;
+                    return true;
                 }
+                if (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                {
+                    return true;
+                }
+                return false;
             }
-            else
+            if (FilteringType == IPAddressFilteringAction.Restrict)
             {
-                //reject the IP if it is in either list
-                if ((IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
-                || (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress))))
+                if (IPAddresses != null && IPAddresses.Any() && IsIPAddressInList(ipAddress))
                 {
                     return false;
                 }
+                if (IPAddressRanges != null && IPAddressRanges.Any() && IPAddressRanges.Any(r => ipAddress.IsInRange(r.StartIPAddress, r.EndIPAddress)))
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
+            throw new ArgumentException("FilteringType is unknown.");
         }
         /// <summary>
         /// Updates IPAddress list, returns true when allowed for any IP

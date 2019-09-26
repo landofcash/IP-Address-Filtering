@@ -38,7 +38,7 @@ namespace IPAddressFiltering.Testing
         {
 
             IPAddressFilterAttribute attribute =
-                new IPAddressFilterAttribute(new string[] {
+                new IPAddressFilterAttribute(new [] {
                            "94.201.252.21",
                            "94.201.252.22",
                            "94.201.252.23",
